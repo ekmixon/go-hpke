@@ -95,7 +95,7 @@ class CipherSuite(object):
         self.aead_id = aead_id
 
     def __str__(self):
-        return kemMap[self.kem_id] + ", " + kdfMap[self.kdf_id] + ", " + aeadMap[self.aead_id]
+        return f"{kemMap[self.kem_id]}, {kdfMap[self.kdf_id]}, {aeadMap[self.aead_id]}"
 
     def __repr__(self):
         return str(self)
@@ -120,7 +120,7 @@ def format_encryption(entry, count):
     formatted = wrap_line("sequence number: %d" % count) + "\n"
     for key in ordered_encryption_keys:
         if key in entry:
-            formatted = formatted + wrap_line(key + ": " + str(entry[key])) + "\n"
+            formatted = formatted + wrap_line(f"{key}: {str(entry[key])}") + "\n"
     return formatted
 
 def format_encryptions(entry, mode):
@@ -131,13 +131,13 @@ def format_encryptions(entry, mode):
                 formatted = formatted + format_encryption(encryption, i)
                 if i < max(encryption_count_keys):
                     formatted = formatted + "\n"
-    return formatted + "~~~"
+    return f"{formatted}~~~"
 
 def format_export(entry):
     formatted = ""
     for key in ordered_export_keys:
         if key in entry:
-            formatted = formatted + wrap_line(key + ": " + str(entry[key])) + "\n"
+            formatted = formatted + wrap_line(f"{key}: {str(entry[key])}") + "\n"
     return formatted
 
 def format_exports(entry):
@@ -146,31 +146,32 @@ def format_exports(entry):
         formatted = formatted + format_export(export)
         if i < len(entry["exports"]) - 1:
             formatted = formatted + "\n"
-    return formatted + "~~~"
+    return f"{formatted}~~~"
 
 def format_vector(entry, mode):
     formatted = "~~~\n"
     for key in ordered_keys:
         if key in entry:
-            formatted = formatted + wrap_line(key + ": " + str(entry[key])) + "\n"
+            formatted = formatted + wrap_line(f"{key}: {str(entry[key])}") + "\n"
     return formatted + "~~~\n"
 
 with open(sys.argv[1], "r") as fh:
     data = json.load(fh)
     for suite in testSuites:
-        print("## " + str(suite))
+        print(f"## {str(suite)}")
         print("")
         for mode in [modeBase, modePSK, modeAuth, modeAuthPSK]:
             for vector in data:
-                if suite.matches_vector(vector):
-                    if mode == entry_mode_value(vector):
-                        print("### " + modeMap[mode] + " Setup Information")
-                        print(format_vector(vector, mode))
-                        if "encryptions" in vector and len(vector["encryptions"]) > 0:
-                            print("#### Encryptions")
-                            print(format_encryptions(vector, mode))
-                            print("")
-                        print("#### Exported Values")
-                        print(format_exports(vector))
+                if suite.matches_vector(vector) and mode == entry_mode_value(
+                    vector
+                ):
+                    print(f"### {modeMap[mode]} Setup Information")
+                    print(format_vector(vector, mode))
+                    if "encryptions" in vector and len(vector["encryptions"]) > 0:
+                        print("#### Encryptions")
+                        print(format_encryptions(vector, mode))
                         print("")
+                    print("#### Exported Values")
+                    print(format_exports(vector))
+                    print("")
                         
